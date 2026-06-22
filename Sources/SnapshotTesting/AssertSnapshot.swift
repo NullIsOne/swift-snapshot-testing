@@ -374,6 +374,26 @@ public func verifySnapshot<Value, Format>(
             ProcessInfo.processInfo.environment.keys.contains("__XCODE_BUILT_PRODUCTS_DIR_PATHS")
           {
             XCTContext.runActivity(named: "Attached Recorded Snapshot") { activity in
+              let pngAttachmentName =
+                snapshotFileUrl.deletingPathExtension().lastPathComponent + ".png"
+
+              #if os(iOS) || os(tvOS)
+                if let image = diffable as? UIImage {
+                  let attachment = XCTAttachment(image: image)
+                  attachment.name = pngAttachmentName
+                  activity.add(attachment)
+                  return
+                }
+              #endif
+              #if os(macOS)
+                if let image = diffable as? NSImage {
+                  let attachment = XCTAttachment(image: image)
+                  attachment.name = pngAttachmentName
+                  activity.add(attachment)
+                  return
+                }
+              #endif
+
               if writeToDisk {
                 // Snapshot was written to disk. Create attachment from file
                 let attachment = XCTAttachment(contentsOfFile: snapshotFileUrl)

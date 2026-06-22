@@ -1,4 +1,7 @@
 import SnapshotTesting
+#if canImport(UIKit)
+  import UIKit
+#endif
 import XCTest
 
 class RecordTests: BaseTestCase {
@@ -35,6 +38,27 @@ class RecordTests: BaseTestCase {
     try? FileManager.default
       .removeItem(at: snapshotURL.deletingLastPathComponent())
   }
+
+  #if canImport(UIKit)
+    func testRecordNever_Image_DoesNotWriteToDisk() {
+      let imageURL = imageSnapshotURL()
+
+      XCTExpectFailure {
+        withSnapshotTesting(record: .never) {
+          assertSnapshot(of: Self.testImage, as: .image)
+        }
+      } issueMatcher: {
+        $0.compactDescription == """
+          failed - No reference was found on disk. New snapshot was not recorded because recording is disabled
+          """
+      }
+
+      XCTAssertEqual(
+        FileManager.default.fileExists(atPath: imageURL.path),
+        false
+      )
+    }
+  #endif
 
   #if canImport(Darwin)
     func testRecordNever() {
@@ -205,3 +229,18 @@ class RecordTests: BaseTestCase {
     }
   #endif
 }
+
+#if canImport(UIKit)
+  private extension RecordTests {
+    static var testImage: UIImage {
+      UIGraphicsImageRenderer(size: CGSize(width: 10, height: 10)).image { context in
+        UIColor.red.setFill()
+        context.fill(CGRect(origin: .zero, size: CGSize(width: 10, height: 10)))
+      }
+    }
+
+    func imageSnapshotURL() -> URL {
+      snapshotURL.deletingPathExtension().appendingPathExtension("png")
+    }
+  }
+#endif
