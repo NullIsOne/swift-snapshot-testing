@@ -116,7 +116,6 @@
     } else {
       let oldRep = NSBitmapImageRep(cgImage: oldCgImage).bitmapData!
       let newRep = NSBitmapImageRep(cgImage: newerCgImage).bitmapData!
-      let byteCountThreshold = Int((1 - precision) * Float(byteCount))
       var differentByteCount = 0
       // NB: We are purposely using a verbose 'while' loop instead of a 'for in' loop.  When the
       //     compiler doesn't have optimizations enabled, like in test targets, a `while` loop is
@@ -129,9 +128,12 @@
           differentByteCount += 1
         }
       }
-      if differentByteCount > byteCountThreshold {
-        let actualPrecision = 1 - Float(differentByteCount) / Float(byteCount)
-        return "Actual image precision \(actualPrecision) is less than required \(precision)"
+      if let message = imagePrecisionFailureMessage(
+        differentUnitCount: differentByteCount,
+        unitCount: byteCount,
+        precision: precision
+      ) {
+        return message
       }
     }
     return nil
