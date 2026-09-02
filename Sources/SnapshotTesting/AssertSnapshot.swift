@@ -331,7 +331,7 @@ public func verifySnapshot<Value, Format>(
         snapshotFileUrl = snapshotFileUrl.appendingPathExtension(ext)
       }
       let fileManager = FileManager.default
-      try fileManager.createDirectory(at: snapshotDirectoryUrl, withIntermediateDirectories: true)
+      try SnapshotDirectoryCache.createDirectoryIfNeeded(at: snapshotDirectoryUrl, fileManager: fileManager)
 
       let tookSnapshot = XCTestExpectation(description: "Took snapshot")
       var optionalDiffable: Format?
@@ -367,6 +367,7 @@ public func verifySnapshot<Value, Format>(
 
         if writeToDisk {
           try snapshotData.write(to: snapshotFileUrl)
+          SnapshotReferenceCache.invalidate(for: snapshotFileUrl)
         }
 
         #if !os(Android) && !os(Linux) && !os(Windows)
@@ -448,7 +449,7 @@ public func verifySnapshot<Value, Format>(
         }
       }
 
-      let data = try Data(contentsOf: snapshotFileUrl)
+      let data = try SnapshotReferenceCache.data(for: snapshotFileUrl, fileManager: fileManager)
       let reference = snapshotting.diffing.fromData(data)
 
       #if os(iOS) || os(tvOS)
@@ -470,7 +471,7 @@ public func verifySnapshot<Value, Format>(
           ?? NSTemporaryDirectory(), isDirectory: true
       )
       let artifactsSubUrl = artifactsUrl.appendingPathComponent(fileName)
-      try fileManager.createDirectory(at: artifactsSubUrl, withIntermediateDirectories: true)
+      try SnapshotDirectoryCache.createDirectoryIfNeeded(at: artifactsSubUrl, fileManager: fileManager)
       let failedSnapshotFileUrl = artifactsSubUrl.appendingPathComponent(
         snapshotFileUrl.lastPathComponent)
       try snapshotting.diffing.toData(diffable).write(to: failedSnapshotFileUrl)
