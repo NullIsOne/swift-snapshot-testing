@@ -299,7 +299,11 @@ public func verifySnapshot<Value, Format>(
     ?? _record
   return withSnapshotTesting(record: record) { () -> String? in
     do {
-      let fileUrl = URL(fileURLWithPath: "\(filePath)", isDirectory: false)
+      let resolvedFilePath =
+        snapshotDirectory == nil
+        ? SnapshotReferencePathResolver.resolveSourceFilePath("\(filePath)")
+        : "\(filePath)"
+      let fileUrl = URL(fileURLWithPath: resolvedFilePath, isDirectory: false)
       let fileName = fileUrl.deletingPathExtension().lastPathComponent
 
       #if os(Android)
