@@ -12,10 +12,11 @@ enum SnapshotReferencePathResolver {
       return compileTimePath
     }
 
-    guard let testsRange = compileTimePath.range(of: "/Tests/", options: .backwards) else {
+    guard let testsRange = compileTimePath.range(of: "/Tests/") else {
       return compileTimePath
     }
 
+    // First `/Tests/` anchor (repo checkout), not nested `…/BurgerKingUITests/Tests/`.
     let suffix = String(compileTimePath[testsRange.lowerBound...].dropFirst())
     return (referenceRoot as NSString).appendingPathComponent(suffix)
   }

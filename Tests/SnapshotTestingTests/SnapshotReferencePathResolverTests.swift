@@ -40,6 +40,21 @@ final class SnapshotReferencePathResolverTests: XCTestCase {
     )
   }
 
+  func testResolveSourceFilePath_withNestedTestsSegment_rewritesFromFirstTestsAnchor() {
+    let compileTime =
+      "/Users/builds/aIPZTUFfM/0/orderapp-newmobile/ios/Tests/BurgerKingUITests/Tests/Scenario/AnalyticsEvents/AuthEventsUITests.swift"
+    let expected =
+      "/Users/builds/WKVgd1Ke_/0/orderapp-newmobile/ios/Tests/BurgerKingUITests/Tests/Scenario/AnalyticsEvents/AuthEventsUITests.swift"
+
+    setenv("SNAPSHOT_REFERENCE_DIR", "/Users/builds/WKVgd1Ke_/0/orderapp-newmobile/ios", 1)
+    defer { unsetenv("SNAPSHOT_REFERENCE_DIR") }
+
+    XCTAssertEqual(
+      SnapshotReferencePathResolver.resolveSourceFilePath(compileTime),
+      expected
+    )
+  }
+
   func testResolveSourceFilePath_withoutTestsAnchor_returnsCompileTimePath() {
     let compileTime = "/Users/builds/iRz0CLGrr/0/orderapp-newmobile/ios/Modules/Foo/Bar.swift"
 
